@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nike_concept/notch_icon.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,28 +40,79 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: Colors.black,
+        bottomNavigationBar: Container(
+          height: 80,
+          margin:
+              EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+              color: Colors.orange, borderRadius: BorderRadius.circular(60)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.home_outlined,
+                  size: 40,
+                ),
+              ),
+              const NotchIcon(),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.person_outline,
+                  size: 40,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          titleSpacing: 0,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(50),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TabBar(
+                indicatorSize: TabBarIndicatorSize.label,
+                indicatorColor: Colors.transparent,
+                isScrollable: true,
+                padding: EdgeInsets.zero,
+                indicatorPadding: EdgeInsets.zero,
+                labelPadding: EdgeInsets.symmetric(horizontal: 10),
+                labelStyle:
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                tabs: [
+                  Tab(text: 'Basketball'),
+                  Tab(text: 'Running'),
+                  Tab(text: 'Training'),
+                ],
+              ),
+            ),
+          ),
+          title: Row(
+            children: [
+              const SizedBox(width: 20),
+              Image.asset('assets/nike_w.png'),
+              const Spacer(),
+              const Icon(Icons.menu),
+              const SizedBox(width: 16),
+              const Icon(Icons.backpack),
+              const SizedBox(width: 20),
+            ],
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 30),
+          child: Container(color: Colors.red),
+        ),
       ),
     );
   }
