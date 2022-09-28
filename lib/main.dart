@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nike_concept/list.dart';
 import 'package:nike_concept/notch_icon.dart';
 
 void main() {
@@ -111,7 +112,16 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: Padding(
           padding: const EdgeInsets.only(top: 30),
-          child: Container(color: Colors.red),
+          child: Container(
+            color: Colors.black,
+            child: TabBarView(
+              children: [
+                const ProductList(),
+                Container(color: Colors.green),
+                Container(color: Colors.yellow),
+              ],
+            ),
+          ),
         ),
       ),
     );
