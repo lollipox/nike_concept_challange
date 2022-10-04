@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:nike_concept/list.dart';
 import 'package:nike_concept/notch_icon.dart';
 
@@ -15,6 +16,8 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -31,13 +34,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  bool isOdd = false;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  Color get _labelColor {
+    return isOdd ? Colors.white : Colors.orange;
   }
+
+  onScrollChanged(int page) => setState(() => isOdd = page.isOdd);
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +49,17 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         extendBody: true,
         backgroundColor: Colors.black,
-        bottomNavigationBar: Container(
+        bottomNavigationBar: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
           height: 80,
-          margin:
-              EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom,
+          ),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-              color: Colors.orange, borderRadius: BorderRadius.circular(60)),
+            color: _labelColor,
+            borderRadius: BorderRadius.circular(60),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -77,8 +84,8 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           backgroundColor: Colors.black,
           titleSpacing: 0,
-          bottom: const PreferredSize(
-            preferredSize: Size.fromHeight(50),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(50),
             child: Align(
               alignment: Alignment.centerLeft,
               child: TabBar(
@@ -87,10 +94,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 isScrollable: true,
                 padding: EdgeInsets.zero,
                 indicatorPadding: EdgeInsets.zero,
-                labelPadding: EdgeInsets.symmetric(horizontal: 10),
+                labelPadding: const EdgeInsets.symmetric(horizontal: 10),
                 labelStyle:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                tabs: [
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                labelColor: _labelColor,
+                unselectedLabelColor: Colors.white.withOpacity(0.5),
+                tabs: const [
                   Tab(text: 'Basketball'),
                   Tab(text: 'Running'),
                   Tab(text: 'Training'),
@@ -116,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Colors.black,
             child: TabBarView(
               children: [
-                const ProductList(),
+                ProductList(onScrollChanged: onScrollChanged),
                 Container(color: Colors.green),
                 Container(color: Colors.yellow),
               ],

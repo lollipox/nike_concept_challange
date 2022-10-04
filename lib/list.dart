@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:nike_concept/details.dart';
 
 class Product {
   final String image;
@@ -19,7 +21,12 @@ final list = [
 ];
 
 class ProductList extends StatefulWidget {
-  const ProductList({Key? key}) : super(key: key);
+  const ProductList({
+    Key? key,
+    required this.onScrollChanged,
+  }) : super(key: key);
+
+  final ValueChanged<int> onScrollChanged;
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -35,8 +42,21 @@ class _ProductListState extends State<ProductList> {
   void initState() {
     _controller.addListener(() {
       setState(() => _currentPage = _controller.page!);
+      widget.onScrollChanged(_controller.page!.round());
     });
     super.initState();
+  }
+
+  goToDetails(Product product) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, animation, secondaryAnimation) =>
+            DetailsPage(product: product),
+        transitionsBuilder: (_, animation, ___, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
   }
 
   @override
@@ -59,7 +79,11 @@ class _ProductListState extends State<ProductList> {
               return AnimatedContainer(
                 margin: EdgeInsets.only(right: 40, top: top.abs()),
                 duration: const Duration(milliseconds: 50),
-                child: ProductCard(product: list[index]),
+                child: ProductCard(
+                  product: list[index],
+                  disabled: index.isOdd && _currentPage.round() == index,
+                  onPressed: () => goToDetails(list[index]),
+                ),
               );
             },
           ),
@@ -70,73 +94,88 @@ class _ProductListState extends State<ProductList> {
 }
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({super.key, required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+    required this.onPressed,
+    this.disabled = false,
+  });
 
   final Product product;
+  final bool disabled;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Container(
-        // clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
-          color: Colors.white,
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(30),
-              child: DefaultTextStyle(
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(product.title.toUpperCase()),
-                    Text(product.subtitle.toUpperCase()),
-                    Text('\$${product.price}'),
-                  ],
-                ),
-              ),
-            ),
-            Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Text(
-                    product.title.toUpperCase(),
-                    style: Theme.of(context).textTheme.headline2!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[200],
-                        ),
+    return GestureDetector(
+      onTap: onPressed,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          // clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color: Colors.white,
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(30),
+                child: DefaultTextStyle(
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
-                )),
-            Transform.translate(
-              offset: const Offset(35, 0),
-              child: Image.asset('assets/J_001.png'),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(50),
-                    bottomRight: Radius.circular(50),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(product.title.toUpperCase()),
+                      Text(product.subtitle.toUpperCase()),
+                      Text('\$${product.price}'),
+                    ],
                   ),
                 ),
-                child: const Icon(Icons.add, size: 40),
               ),
-            )
-          ],
+              Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Text(
+                      product.title.toUpperCase(),
+                      style: GoogleFonts.fredokaOne(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[200],
+                      ),
+                    ),
+                  )),
+              Transform.translate(
+                offset: const Offset(35, 0),
+                child: Hero(
+                  tag: product.image,
+                  child: Image.asset(product.image),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: AnimatedContainer(
+                  width: 100,
+                  height: 100,
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    color: disabled ? Colors.white : Colors.orange,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(50),
+                      bottomRight: Radius.circular(50),
+                    ),
+                  ),
+                  child: const Icon(Icons.add, size: 40),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
