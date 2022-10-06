@@ -35,6 +35,7 @@ class DetailsPage extends StatefulWidget {
 class _DetailsPageState extends State<DetailsPage>
     with TickerProviderStateMixin {
   double activeSize = 0.8;
+  int imageIndex = 0;
   Color activeColor = Colors.orange;
 
   late final AnimationController _controller;
@@ -104,97 +105,18 @@ class _DetailsPageState extends State<DetailsPage>
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
-
     return Scaffold(
       body: PrimaryColorProvider(
         color: activeColor,
         child: Stack(
           children: [
-            AnimatedBuilder(
-                animation: _circleOffsetAnimation,
-                builder: (context, child) {
-                  return Positioned(
-                    top: -width * 0.2,
-                    right: -width * 0.5,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: _circleOffsetAnimation.value * width,
-                      height: _circleOffsetAnimation.value * width,
-                      decoration: BoxDecoration(
-                        color: activeColor,
-                        borderRadius: BorderRadius.circular(
-                            _circleOffsetAnimation.value * width),
-                      ),
-                    ),
-                  );
-                }),
-            Positioned(
-              top: kToolbarHeight + 20,
-              left: 20,
-              right: 20,
-              child: Row(
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: EdgeInsets.zero,
-                      maximumSize: const Size(40, 40),
-                      minimumSize: const Size(40, 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.favorite,
-                      size: 30,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              top: height * 0.2,
-              left: 10,
-              right: 10,
-              child: FittedBox(
-                child: Text(
-                  widget.product.title.toUpperCase(),
-                  style: GoogleFonts.fredokaOne(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[200],
-                  ),
-                ),
-              ),
-            ),
-            Column(
-              children: [
-                Hero(
-                  tag: widget.product.image,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.2),
-                    child: Stack(
-                      children: [
-                        AnimatedScale(
-                          duration: const Duration(milliseconds: 300),
-                          scale: activeSize,
-                          child: Image.asset(widget.product.image),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _Circle(animation: _circleOffsetAnimation, color: activeColor),
+            const Toolbar(),
+            _Title(product: widget.product),
+            _Image(
+                product: widget.product,
+                size: activeSize,
+                imageIndex: imageIndex),
             Positioned(
               bottom: 265,
               right: 16,
@@ -294,8 +216,11 @@ class _DetailsPageState extends State<DetailsPage>
                       activeSize: activeSize,
                     ),
                     const SizedBox(height: 20),
-                    SneakersColors(onColorChanged: (value) {
-                      setState(() => activeColor = value);
+                    SneakersColors(onColorChanged: (value, index) {
+                      setState(() {
+                        activeColor = value;
+                        imageIndex = index;
+                      });
                     }),
                   ],
                 ),
@@ -398,7 +323,7 @@ class SneakersColors extends StatelessWidget {
 
   final List<Color> _colors = const [Colors.orange, Colors.red, Colors.grey];
 
-  final ValueChanged<Color> onColorChanged;
+  final Function(Color, int) onColorChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -424,7 +349,7 @@ class SneakersColors extends StatelessWidget {
               children: List.generate(
                 _colors.length,
                 (index) => GestureDetector(
-                  onTap: () => onColorChanged(_colors[index]),
+                  onTap: () => onColorChanged(_colors[index], index),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     width: 30,
@@ -444,6 +369,140 @@ class SneakersColors extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class _Circle extends StatelessWidget {
+  const _Circle({
+    super.key,
+    required this.animation,
+    required this.color,
+  });
+
+  final Animation<double> animation;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return Positioned(
+          top: -width * 0.2,
+          right: -width * 0.5,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: animation.value * width,
+            height: animation.value * width,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(animation.value * width),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class Toolbar extends StatelessWidget {
+  const Toolbar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: kToolbarHeight + 20,
+      left: 20,
+      right: 20,
+      child: Row(
+        children: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              padding: EdgeInsets.zero,
+              maximumSize: const Size(40, 40),
+              minimumSize: const Size(40, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Icon(Icons.arrow_back, color: Colors.black),
+          ),
+          const Spacer(),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.favorite, size: 30, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Title extends StatelessWidget {
+  const _Title({super.key, required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
+    return Positioned(
+      top: height * 0.2,
+      left: 10,
+      right: 10,
+      child: FittedBox(
+        child: Text(
+          product.title.toUpperCase(),
+          style: GoogleFonts.fredokaOne(
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[200],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Image extends StatelessWidget {
+  const _Image({
+    Key? key,
+    required this.product,
+    required this.size,
+    required this.imageIndex,
+  }) : super(key: key);
+
+  final Product product;
+
+  final double size;
+
+  final int imageIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Hero(
+          tag: product.images[0],
+          child: Padding(
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
+            child: Stack(
+              children: [
+                AnimatedScale(
+                  duration: const Duration(milliseconds: 300),
+                  scale: size,
+                  child: Image.asset(product.images[imageIndex]),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

@@ -5,22 +5,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nike_concept/details.dart';
 
 class Product {
-  final String image;
+  final List<String> images;
   final int price;
   final String title;
   final String subtitle;
 
-  String imagePalette({int count = 1}) {
-    return image.replaceAll(RegExp(r'\d'), count.toString());
-  }
-
-  Product(this.image, this.price, this.title, this.subtitle);
+  Product(this.images, this.price, this.title, this.subtitle);
 }
 
 final list = [
-  Product('assets/J_1.png', 850, 'Nike Air', 'Air Jordan 1 Mid SE GC'),
-  Product('assets/N_1.png', 649, 'Nike Air', 'Air Jordan 1 White'),
-  Product('assets/Z_1.png', 1449, 'Nike Max', 'Nike Air MAX 97\'Olympic Gold'),
+  Product(['assets/J_1.png', 'assets/J_2.png', 'assets/J_3.png'], 850,
+      'Nike Air', 'Air Jordan 1 Mid SE GC'),
+  Product(['assets/N_1.png', 'assets/N_2.png', 'assets/N_3.png'], 1449,
+      'Nike Max', 'Nike Air MAX 97\'Olympic Gold'),
+  Product(['assets/Z_1.png', 'assets/Z_2.png', 'assets/Z_3.png'], 649,
+      'Nike Air', 'Air Jordan 1 White'),
 ];
 
 class ProductList extends StatefulWidget {
@@ -170,8 +169,8 @@ class ProductCard extends StatelessWidget {
               Transform.translate(
                 offset: const Offset(35, 0),
                 child: Hero(
-                  tag: product.image,
-                  child: Image.asset(product.image),
+                  tag: product.images[0],
+                  child: Image.asset(product.images[0]),
                 ),
               ),
               Align(
