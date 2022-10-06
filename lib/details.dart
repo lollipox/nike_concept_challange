@@ -118,7 +118,7 @@ class _DetailsPageState extends State<DetailsPage>
                 size: activeSize,
                 imageIndex: imageIndex),
             Positioned(
-              bottom: 265,
+              bottom: 262,
               right: 16,
               child: SlideTransition(
                 position: _rightOffsetAnimation,
