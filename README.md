@@ -1,6 +1,6 @@
 # nike_concept
 
-![nike](https://github.com/lollipox/nike_concept_challange/blob/main/assets/ezgif.com-gif-maker.gif)
+![nike](https://github.com/lollipox/nike_concept_challange/blob/main/assets/ezgif.com-gif-maker.gif = 250x250)
 
 A new Flutter project.
 
