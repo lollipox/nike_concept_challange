@@ -10,14 +10,17 @@ class Product {
   final String title;
   final String subtitle;
 
+  String imagePalette({int count = 1}) {
+    return image.replaceAll(RegExp(r'\d'), count.toString());
+  }
+
   Product(this.image, this.price, this.title, this.subtitle);
 }
 
 final list = [
-  Product('assets/J_001.png', 850, 'Nike Air', 'Air Jordan 1 Mid SE GC'),
-  Product('assets/N_001.png', 649, 'Nike Air', 'Air Jordan 1 White'),
-  Product(
-      'assets/Z_003.png', 1449, 'Nike Max', 'Nike Air MAX 97\'Olympic Gold'),
+  Product('assets/J_1.png', 850, 'Nike Air', 'Air Jordan 1 Mid SE GC'),
+  Product('assets/N_1.png', 649, 'Nike Air', 'Air Jordan 1 White'),
+  Product('assets/Z_1.png', 1449, 'Nike Max', 'Nike Air MAX 97\'Olympic Gold'),
 ];
 
 class ProductList extends StatefulWidget {
@@ -50,10 +53,23 @@ class _ProductListState extends State<ProductList> {
   goToDetails(Product product) {
     Navigator.of(context).push(
       PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        reverseTransitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (_, animation, secondaryAnimation) =>
             DetailsPage(product: product),
         transitionsBuilder: (_, animation, ___, child) {
-          return FadeTransition(opacity: animation, child: child);
+          const begin = Offset(0.0, 0.15);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end);
+          final offsetAnimation = animation.drive(tween);
+
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            ),
+          );
         },
       ),
     );

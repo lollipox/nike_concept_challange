@@ -32,9 +32,75 @@ class DetailsPage extends StatefulWidget {
   State<DetailsPage> createState() => _DetailsPageState();
 }
 
-class _DetailsPageState extends State<DetailsPage> {
+class _DetailsPageState extends State<DetailsPage>
+    with TickerProviderStateMixin {
   double activeSize = 0.8;
   Color activeColor = Colors.orange;
+
+  late final AnimationController _controller;
+  late final AnimationController _circleController;
+  late final Animation<Offset> _leftOffsetAnimation;
+  late final Animation<Offset> _rightOffsetAnimation;
+  late final Animation<double> _circleOffsetAnimation;
+
+  bool startLeftSlide = false;
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    );
+
+    _circleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    _leftOffsetAnimation = Tween<Offset>(
+      begin: const Offset(-1.4, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.ease,
+    ));
+
+    _rightOffsetAnimation = Tween<Offset>(
+      begin: const Offset(1.4, 1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.ease,
+      ),
+    );
+
+    _circleOffsetAnimation = Tween<double>(
+      begin: 0.2,
+      end: 1.1,
+    ).animate(
+      CurvedAnimation(
+        parent: _circleController,
+        curve: Curves.ease,
+      ),
+    );
+
+    super.initState();
+
+    _circleController.addListener(() {
+      if (_circleController.isCompleted) {
+        _controller.forward();
+      }
+    });
+
+    _initAnimation();
+  }
+
+  Future<void> _initAnimation() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    _circleController.forward();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,23 +112,20 @@ class _DetailsPageState extends State<DetailsPage> {
         color: activeColor,
         child: Stack(
           children: [
-            TweenAnimationBuilder(
-                tween: Tween<double>(
-                  begin: width / 2.5,
-                  end: width * 1.1,
-                ),
-                duration: const Duration(milliseconds: 300),
-                builder: (context, size, child) {
+            AnimatedBuilder(
+                animation: _circleOffsetAnimation,
+                builder: (context, child) {
                   return Positioned(
                     top: -width * 0.2,
                     right: -width * 0.5,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      width: size,
-                      height: size,
+                      width: _circleOffsetAnimation.value * width,
+                      height: _circleOffsetAnimation.value * width,
                       decoration: BoxDecoration(
                         color: activeColor,
-                        borderRadius: BorderRadius.circular(size),
+                        borderRadius: BorderRadius.circular(
+                            _circleOffsetAnimation.value * width),
                       ),
                     ),
                   );
@@ -114,89 +177,128 @@ class _DetailsPageState extends State<DetailsPage> {
             ),
             Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height * 0.2),
-                  child: Stack(
-                    children: [
-                      Hero(
-                        tag: widget.product.image,
-                        child: AnimatedScale(
+                Hero(
+                  tag: widget.product.image,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height * 0.2),
+                    child: Stack(
+                      children: [
+                        AnimatedScale(
                           duration: const Duration(milliseconds: 300),
                           scale: activeSize,
                           child: Image.asset(widget.product.image),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
             Positioned(
+              bottom: 265,
+              right: 16,
+              child: SlideTransition(
+                position: _rightOffsetAnimation,
+                child: Text(
+                  '\$${widget.product.price}',
+                  style: GoogleFonts.fredokaOne(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 50,
+              right: 16,
+              child: SlideTransition(
+                position: _rightOffsetAnimation,
+                child: SizedBox(
+                  width: 120,
+                  height: 60,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: activeColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'BUY',
+                      style: GoogleFonts.abel(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
               bottom: 50,
               left: 16,
               right: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.product.title.toUpperCase(),
-                    style: GoogleFonts.fredokaOne(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              child: SlideTransition(
+                position: _leftOffsetAnimation,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.product.title.toUpperCase(),
+                      style: GoogleFonts.fredokaOne(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        widget.product.subtitle.toUpperCase(),
-                        style: GoogleFonts.fredokaOne(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.product.subtitle.toUpperCase(),
+                            style: GoogleFonts.fredokaOne(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        '\$${widget.product.price}',
-                        style: GoogleFonts.fredokaOne(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  RatingBar.builder(
-                    initialRating: 3,
-                    minRating: 1,
-                    unratedColor: Colors.white,
-                    direction: Axis.horizontal,
-                    allowHalfRating: true,
-                    itemCount: 5,
-                    itemSize: 25,
-                    itemPadding: const EdgeInsets.only(right: 8),
-                    itemBuilder: (context, _) =>
-                        Icon(Icons.star, color: activeColor),
-                    onRatingUpdate: (rating) {},
-                  ),
-                  const SizedBox(height: 20),
-                  SizesToolbar(
-                    onSizeChanged: (value) {
-                      setState(() => activeSize = value);
-                    },
-                    activeSize: activeSize,
-                  ),
-                  const SizedBox(height: 20),
-                  SneakersColors(onColorChanged: (value) {
-                    setState(() => activeColor = value);
-                  }),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    RatingBar.builder(
+                      initialRating: 3,
+                      minRating: 1,
+                      unratedColor: Colors.white,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemSize: 25,
+                      itemPadding: const EdgeInsets.only(right: 8),
+                      itemBuilder: (context, _) =>
+                          Icon(Icons.star, color: activeColor),
+                      onRatingUpdate: (rating) {},
+                    ),
+                    const SizedBox(height: 20),
+                    SizesToolbar(
+                      onSizeChanged: (value) {
+                        setState(() => activeSize = value);
+                      },
+                      activeSize: activeSize,
+                    ),
+                    const SizedBox(height: 20),
+                    SneakersColors(onColorChanged: (value) {
+                      setState(() => activeColor = value);
+                    }),
+                  ],
+                ),
               ),
             )
           ],
@@ -343,27 +445,6 @@ class SneakersColors extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(
-          width: 120,
-          height: 60,
-          child: ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: activeColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'BUY',
-              style: GoogleFonts.abel(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        )
       ],
     );
   }
